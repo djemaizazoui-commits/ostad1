@@ -1,0 +1,55 @@
+name: Build Ostad APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Fix Arabic Filename Issues
+        run: |
+          find SRC/components/ui -name "*قائمة*" -exec bash -c 'mv "$1" "SRC/components/ui/DropdownMenuCustom.jsx"' _ {} \; || true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        run: |
+          npx cap add android || true
+          npx cap sync android
+
+      - name: Build APK with Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ostad-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
