@@ -1,0 +1,8 @@
+{
+  "appId": "com.bodo.teacherassistant",
+  "appName": "مساعد الأستاذ",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
